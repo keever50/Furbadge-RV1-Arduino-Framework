@@ -8,5 +8,5 @@ in case of linux:
 
 Why?
   We need to add our board variant manually so the right pins are used. By default it uses the raspberry pico pinout.
-  The furbadge is not officially supported, so this approach is the easiest.
+  The furbadge is not officially supported so this approach is the easiest.
   
