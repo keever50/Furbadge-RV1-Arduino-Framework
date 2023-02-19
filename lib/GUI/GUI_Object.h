@@ -5,7 +5,7 @@ class GUI_Object
 {
 public:
     GUI_Object(int ID, int x, int y, int w, int h );
-    void (*update_ptr)(void);
+    void (*update_ptr)(void* obj);
     int ID;
     int x; int y; int w; int h;
 

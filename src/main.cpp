@@ -46,8 +46,7 @@ void setup()   {
   //digitalWrite(24, HIGH);
 
   //GUI_Button test_button = new GUI_Button(0, 5, 5, 16, 16, icon16_bmp_test, "TEST");
-  test = gui.create_button(0,5,5,16,16, icon16_bmp_test, "TEST");
-  test->update_ptr();
+  test = gui.create_button(0,5,5,16,16, icon16_bmp_test, "TEXT");
 }
 
 
@@ -59,8 +58,7 @@ void loop() {
   float* pos = JOY.get_direction(J);
   x += pos[0];
   y += pos[1];
-  
-  test->update_ptr();
+
   gui.update();
 
   delay(1000/60);
