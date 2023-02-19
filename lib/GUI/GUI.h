@@ -17,9 +17,9 @@ public:
 
     void update();
     GUI_Button* create_button( int ID, int x, int y, int w, int h, const unsigned char* icon, String text );
-
+*
 private:
-    GUI_Object* gui_objects[256];
+    void* gui_objects[256];
 };
 
 

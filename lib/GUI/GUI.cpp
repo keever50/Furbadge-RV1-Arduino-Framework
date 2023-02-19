@@ -22,7 +22,16 @@ GUI::GUI(uint16_t w, uint16_t h, SPIClass *spi, int8_t dc_pin, int8_t rst_pin, i
 /**************************************************************************/
 void GUI::update()
 {
-    
+    for(int ID=0;ID<256;ID++)
+    {
+        void* obj = gui_objects[ID];
+        if(obj)
+        {
+            GUI_Object* gui_obj = (GUI_Object*)obj;
+            gui_obj->update_ptr(obj);
+        }
+        
+    }
 }
 
 /**************************************************************************/
@@ -40,6 +49,7 @@ void GUI::update()
 GUI_Button* GUI::create_button( int ID, int x, int y, int w, int h, const unsigned char* icon, String text )
 {
     GUI_Button* button = new GUI_Button( ID, x, y, w, h, icon, text);
-    gui_objects[ID] = button;
+    button->text="Tdfsdfd";
+    gui_objects[ID] = button; 
     return button;
 }
