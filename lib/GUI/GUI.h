@@ -15,6 +15,7 @@ public:
 class GUI_Object 
 {
 public:
+    bool initialized = false;
     void (*init_ptr)();
     void (*update_ptr)(GUI_Object* obj_ptr );
     void* properties_ptr;
@@ -25,11 +26,16 @@ public:
 class GUI_Page
 {
 public:
-    GUI_Page(GUI_Display* gui);
+    GUI_Page(GUI_Display* gui, int object_limit = 64 );
     GUI_Display* display_ptr;
-    void update();
+    GUI_Object** object_ptr_array;
+    int obj_limit;
 
+    void update();
     GUI_Object* create_button( String text );
+
+private:
+    bool add_to_object_array( GUI_Object* obj );
 };
 
 

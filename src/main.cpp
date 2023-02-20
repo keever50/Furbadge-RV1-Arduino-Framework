@@ -37,13 +37,17 @@ Joystick JOY(12,13,14,15);
 GUI_Display gui(128, 32, &SPI1, OLED_DC, OLED_RESET, OLED_CS, 62500000UL);
 
 GUI_Page page = GUI_Page(&gui);
-String test_msg = "BUTTON";
-GUI_Object* test_button = page.create_button(test_msg);
+
 
 void setup()   {    
 
   Serial.begin(9600);
   
+  String test_msg = "BUTTON";
+  page.create_button(test_msg);
+  String test_msg2 = "BAP";
+  page.create_button(test_msg2); 
+
 }
 
 float x;
@@ -57,8 +61,8 @@ void loop() {
 
   
   //
-  //page.update();
-  test_button->update_ptr(test_button);
+  page.update();
+  //test_button->update_ptr(test_button);
   delay(1000);
 
 }
