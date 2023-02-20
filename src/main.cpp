@@ -22,49 +22,30 @@ All text above, and the splash screen below must be included in any redistributi
 #include "icons.h"
 #include "GUI.h"
 
-// Used for software SPI
-#define OLED_CLK 10
-#define OLED_MOSI 11
 
-// Used for software or hardware SPI
 #define OLED_CS 9
 #define OLED_DC 7
-
-// Used for I2C or SPI
 #define OLED_RESET 6
 
-Joystick JOY(12,13,14,15);
 GUI_Display gui(128, 32, &SPI1, OLED_DC, OLED_RESET, OLED_CS, 62500000UL);
-
 GUI_Page page = GUI_Page(&gui);
 
-
-void setup()   {    
-
+void setup()   {  
+  delay(500);  
   Serial.begin(9600);
-  
-  String test_msg = "BUTTON";
-  page.create_button(test_msg);
-  String test_msg2 = "BAP";
-  page.create_button(test_msg2); 
+  gui.begin(0x3C);
 
+  gui.display();
+  delay(1000);  
+
+  page.create_button("BEEP", 10, 10, 30, 10 );
 }
 
-float x;
-float y;
+
 void loop() {
-
-  bool* J = JOY.get_inputs();
-  float* pos = JOY.get_direction(J);
-  x += pos[0];
-  y += pos[1];
-
-  
-  //
   page.update();
-  //test_button->update_ptr(test_button);
-  delay(1000);
 
+  delay(1000);
 }
 
 

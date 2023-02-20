@@ -10,6 +10,7 @@ GUI_Display::GUI_Display(uint16_t w, uint16_t h, SPIClass *spi, int8_t dc_pin, i
     //12V power
     pinMode(24, OUTPUT);
     digitalWrite(24, HIGH);
+
 };
 
 GUI_Page::GUI_Page(GUI_Display* gui, int object_limit )
@@ -19,6 +20,18 @@ GUI_Page::GUI_Page(GUI_Display* gui, int object_limit )
     object_ptr_array = new GUI_Object* [object_limit]();
 };
 
+GUI_Object::GUI_Object( GUI_Display **display_ptr_ptr, int x, int y, int w, int h, bool (*init_ptr)(GUI_Object *obj_ptr), void (*update_ptr)(GUI_Object *obj_ptr), void *properties_ptr )
+{
+    
+        _init_ptr = init_ptr;
+        _update_ptr = update_ptr;
+        _display_ptr_ptr = display_ptr_ptr;
+        _properties_ptr = properties_ptr; //Give ptr to properties to object
+
+        //_pos = pos;
+        //_size = size;
+};
+
 //GUI Functions
 
 namespace _GUI_Button
@@ -26,22 +39,44 @@ namespace _GUI_Button
     struct button_properties 
     {
         String button_text;
+        float* pos[2];
+        float* size[2];
     };
 
-    void button_init()
+    bool button_init( GUI_Object* obj_ptr )
     {
         Serial.println("Button init");
+        return true;
     }
 
-    void button_update(GUI_Object* obj_ptr )
+    void button_update( GUI_Object* obj_ptr )
     {
-        button_properties* props = (button_properties*)obj_ptr->properties_ptr;
+        //button_properties* props = (button_properties*)obj_ptr->properties_ptr;
+
+        //GUI_Display** display_ptr_ptr = obj_ptr->display_ptr_ptr;
+        //GUI_Display* display_ptr = display_ptr_ptr[0];
+
+        //display_ptr->drawLine(0,0,30,30, WHITE);
+        //display_ptr->display();
 
         Serial.println("Button update");
-        Serial.println(props->button_text);
+        //Serial.println(props->button_text);
 
     }
 };
+
+
+//Object functions
+
+void GUI_Object::init( )
+{
+    initialized = _init_ptr( self );
+}
+
+void GUI_Object::update( )
+{
+    _update_ptr( self );
+}
 
 //Page Functions
 
@@ -52,7 +87,7 @@ void GUI_Page::update()
         GUI_Object* obj_ptr = object_ptr_array[i];
         if(obj_ptr->initialized)
         {
-            obj_ptr->update_ptr(obj_ptr);
+            obj_ptr->update();
         }
     }
 
@@ -75,25 +110,19 @@ bool GUI_Page::add_to_object_array( GUI_Object* obj )
 }
 
 
-
-GUI_Object* GUI_Page::create_button( String text )
+GUI_Object* GUI_Page::create_button( String text, int x, int  y, int w, int h )
 {
-    GUI_Object* obj = new GUI_Object();
-    obj->init_ptr = &_GUI_Button::button_init;
-    obj->update_ptr = &_GUI_Button::button_update;
-    obj->display_ptr_ptr = &display_ptr; 
 
     _GUI_Button::button_properties* new_props_ptr = new _GUI_Button::button_properties; //Create ptr to new properties
-    new_props_ptr->button_text = text;
+        new_props_ptr->button_text = text;
 
-    obj->properties_ptr = new_props_ptr; //Give ptr to properties to object
+    GUI_Object* obj = new GUI_Object(&display_ptr, x, y, w, h, &_GUI_Button::button_init, &_GUI_Button::button_update, new_props_ptr);
+    obj->self = obj;
+    obj->init( );
 
-    obj->initialized = true;
     //Add obj to list
     bool succ = add_to_object_array( obj );
-    //Serial.println(succ);
-    //Serial.println("fdvdgfdfgfdg");
-    
+
     return obj;
 }
 
