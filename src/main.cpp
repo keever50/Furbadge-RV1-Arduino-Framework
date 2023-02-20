@@ -34,21 +34,17 @@ All text above, and the splash screen below must be included in any redistributi
 #define OLED_RESET 6
 
 Joystick JOY(12,13,14,15);
-GUI gui(128, 32, &SPI1, OLED_DC, OLED_RESET, OLED_CS, 62500000UL);
+GUI_Display gui(128, 32, &SPI1, OLED_DC, OLED_RESET, OLED_CS, 62500000UL);
 
-GUI_Button* test;
+GUI_Page page = GUI_Page(&gui);
+String test_msg = "BUTTON";
+GUI_Object* test_button = page.create_button(test_msg);
+
 void setup()   {    
 
   Serial.begin(9600);
-
-  //12V power
-  //pinMode(24, OUTPUT);
-  //digitalWrite(24, HIGH);
-
-  //GUI_Button test_button = new GUI_Button(0, 5, 5, 16, 16, icon16_bmp_test, "TEST");
-  test = gui.create_button(0,5,5,16,16, icon16_bmp_test, "TEXT");
+  
 }
-
 
 float x;
 float y;
@@ -59,9 +55,11 @@ void loop() {
   x += pos[0];
   y += pos[1];
 
-  gui.update();
-
-  delay(1000/60);
+  
+  //
+  //page.update();
+  test_button->update_ptr(test_button);
+  delay(1000);
 
 }
 
