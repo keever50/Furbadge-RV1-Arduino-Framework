@@ -38,7 +38,12 @@ void setup()   {
   gui.display();
   delay(1000);  
 
-  page.create_button("BEEP", 10, 10, 30, 10 );
+  page.create_button("Option A", 10, 8*0, 1 );
+  page.create_button("Option B", 10, 8*1, 1 );
+  page.create_button("Option C", 10, 8*2, 1 );
+  page.create_button("SAVE", 60, 0, 2 );
+
+  page.create_button("Option D", 10, 8*3, 1 );
 }
 
 

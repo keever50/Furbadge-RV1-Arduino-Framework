@@ -15,12 +15,12 @@ GUI_Display::GUI_Display(uint16_t w, uint16_t h, SPIClass *spi, int8_t dc_pin, i
 
 GUI_Page::GUI_Page(GUI_Display* gui, int object_limit )
 {
-    obj_limit = object_limit;
+    _obj_limit = object_limit;
     display_ptr = gui;    
-    object_ptr_array = new GUI_Object* [object_limit]();
+    object_ptr_array = new GUI_Object* [_obj_limit]();
 };
 
-GUI_Object::GUI_Object( GUI_Display **display_ptr_ptr, int x, int y, int w, int h, bool (*init_ptr)(GUI_Object *obj_ptr), void (*update_ptr)(GUI_Object *obj_ptr), void *properties_ptr )
+GUI_Object::GUI_Object( GUI_Display **display_ptr_ptr, int x, int y, int w, int h, bool (*init_ptr)(GUI_Object *obj_ptr), void (*update_ptr)(GUI_Object &obj), void *properties_ptr )
 {
     
         _init_ptr = init_ptr;
@@ -28,42 +28,12 @@ GUI_Object::GUI_Object( GUI_Display **display_ptr_ptr, int x, int y, int w, int 
         _display_ptr_ptr = display_ptr_ptr;
         _properties_ptr = properties_ptr; //Give ptr to properties to object
 
-        //_pos = pos;
-        //_size = size;
+        _pos[0]=x;
+        _pos[1]=y;
+        _size[0]=w;
+        _size[1]=h;
 };
 
-//GUI Functions
-
-namespace _GUI_Button
-{
-    struct button_properties 
-    {
-        String button_text;
-        float* pos[2];
-        float* size[2];
-    };
-
-    bool button_init( GUI_Object* obj_ptr )
-    {
-        Serial.println("Button init");
-        return true;
-    }
-
-    void button_update( GUI_Object* obj_ptr )
-    {
-        //button_properties* props = (button_properties*)obj_ptr->properties_ptr;
-
-        //GUI_Display** display_ptr_ptr = obj_ptr->display_ptr_ptr;
-        //GUI_Display* display_ptr = display_ptr_ptr[0];
-
-        //display_ptr->drawLine(0,0,30,30, WHITE);
-        //display_ptr->display();
-
-        Serial.println("Button update");
-        //Serial.println(props->button_text);
-
-    }
-};
 
 
 //Object functions
@@ -75,14 +45,36 @@ void GUI_Object::init( )
 
 void GUI_Object::update( )
 {
-    _update_ptr( self );
+    _update_ptr( *self );
+}
+
+int *GUI_Object::get_pos()
+{
+    return _pos;    
+}
+
+int *GUI_Object::get_size()
+{
+    return _size;    
+}
+
+GUI_Display *GUI_Object::get_display()
+{
+    return *_display_ptr_ptr;
+}
+
+void *GUI_Object::get_properties()
+{
+    return _properties_ptr;
 }
 
 //Page Functions
 
 void GUI_Page::update()
 {
-    for(int i=0; i<sizeof(object_ptr_array); i++)
+    display_ptr->clearDisplay();
+
+    for(int i=0; i<_obj_limit; i++)
     {
         GUI_Object* obj_ptr = object_ptr_array[i];
         if(obj_ptr->initialized)
@@ -91,17 +83,20 @@ void GUI_Page::update()
         }
     }
 
+    display_ptr->display();
+
 }
 
 bool GUI_Page::add_to_object_array( GUI_Object* obj )
 {
 
-    for(int i=0; i<sizeof(object_ptr_array);i++)
+    for(int i=0; i<_obj_limit;i++)
     {
            
         if(object_ptr_array[i]->initialized == false) 
         {
             object_ptr_array[i] = obj;
+            
             return true;
         }  
     }
@@ -109,17 +104,62 @@ bool GUI_Page::add_to_object_array( GUI_Object* obj )
     return false;
 }
 
+//GUI Functions
 
-GUI_Object* GUI_Page::create_button( String text, int x, int  y, int w, int h )
+namespace _GUI_Button
+{
+    struct button_properties 
+    {
+        String button_text;
+        int size;
+    };
+
+    bool button_init( GUI_Object *obj_ptr )
+    {
+        Serial.println("Button init");
+        return true;
+    }
+
+    void button_update( GUI_Object &obj )
+    {
+        button_properties& props = *((button_properties*)obj.get_properties());
+        GUI_Display& disp = *obj.get_display();
+
+        //disp.clearDisplay();
+
+        int *pos = obj.get_pos();
+        int *size = obj.get_size();
+
+        disp.setTextSize(props.size);
+        disp.setTextWrap(false);
+        disp.setTextColor(BLACK);
+
+        int16_t pos_x = (int16_t)pos[0];
+        int16_t pos_y = (int16_t)pos[1];
+
+        int16_t text_x; int16_t text_y; uint16_t text_size_x; uint16_t text_size_y;
+        String text = props.button_text;
+        disp.getTextBounds(text, pos_x, pos_y, &text_x, &text_y, &text_size_x, &text_size_y);
+
+        disp.fillRect(text_x, text_y, text_size_x, text_size_y-props.size, WHITE);
+        disp.setCursor(pos_x,pos_y);
+        disp.print(text);
+
+        
+    }
+};
+
+
+GUI_Object* GUI_Page::create_button( String text, int x, int  y, int s )
 {
 
     _GUI_Button::button_properties* new_props_ptr = new _GUI_Button::button_properties; //Create ptr to new properties
         new_props_ptr->button_text = text;
-
-    GUI_Object* obj = new GUI_Object(&display_ptr, x, y, w, h, &_GUI_Button::button_init, &_GUI_Button::button_update, new_props_ptr);
+        new_props_ptr->size = s;
+    GUI_Object* obj = new GUI_Object(&display_ptr, x, y, 1, 1, &_GUI_Button::button_init, &_GUI_Button::button_update, new_props_ptr);
     obj->self = obj;
     obj->init( );
-
+    
     //Add obj to list
     bool succ = add_to_object_array( obj );
 
